@@ -1,18 +1,17 @@
-#ifndef THREAD_POOL_HPP
-#define THREAD_POOL_HPP
+#ifndef UTIL_THREAD_POOL_HPP
+#define UTIL_THREAD_POOL_HPP
 
 #include <assert.h>
 #include <functional>
 #include <future>
 #include <vector>
 #include <queue>
-
-#include "noncopyable.h"
+#include "common.h"
 
 namespace util
 {
 
-class ThreadPool : noncopyable
+class ThreadPool
 {
 public:
     using Task = std::function<void()>;
@@ -29,6 +28,8 @@ public:
         if (runFlag_)
             stop();
     }
+
+    DISALLOW_COPY_AND_ASSIGN(ThreadPool);
 
     template <class Fn, class... Args>
     auto commit(Fn&& fn, Args&& ... args) ->std::future<decltype(fn(args...))>;
@@ -54,14 +55,14 @@ auto ThreadPool::commit(Fn&& fn, Args&& ... args) ->std::future<decltype(fn(args
     using RetType = decltype(fn(args...));
     auto task = std::make_shared<std::packaged_task<RetType()>>(
                     std::bind(std::forward<Fn>(fn), std::forward<Args>(args)...));
+    auto future = task->get_future();
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (!runFlag_)
-            throw std::runtime_error("ThreadPool is stopped");
-        tasks_.emplace([task]() { (*task)(); });
-        cvTask_.notify_one();
+        if (!runFlag_) throw std::runtime_error("ThreadPool is stopped");
+        tasks_.emplace([task] { (*task)(); });   
     }
-    return task->get_future();
+    cvTask_.notify_one();
+    return future;
 }
 
 inline void ThreadPool::start(int threadNum)
@@ -109,6 +110,6 @@ inline void ThreadPool::stop()
 }
 
 
-} //namespace util
+} // namespace util
 
-#endif //THREAD_POOL_HPP
+#endif // UTIL_THREAD_POOL_HPP
