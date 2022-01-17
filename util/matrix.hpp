@@ -1,11 +1,12 @@
-#ifndef MATRIX_HPP
-#define MATRIX_HPP
+#ifndef UTIL_MATRIX_HPP
+#define UTIL_MATRIX_HPP
 
 #include <assert.h>
 #include <array>
 #include <iostream>
 
-
+namespace util
+{
 
 template <typename T, int ROWS, int COLS>
 class Matrix
@@ -64,45 +65,35 @@ public:
         return res;
     }
 
-    Matrix()
-    {
-    }
-    
+    Matrix() = default;
+
     Matrix(std::initializer_list<T> data)
-    {
-        std::copy(data.begin(), data.end(), data_.begin());
-    }
+    { std::copy(data.begin(), data.end(), data_.begin()); }
 
-    Matrix(const std::array<T, ROWS* COLS>& data):
-        data_(data)
-    {
-    }
+    Matrix(const std::array<T, ROWS* COLS>& data): data_(data) {}
 
-    Matrix(const T& element)
-    {
-        fill(element);
-    }
+    Matrix(const T& element) { fill(element); }
 
     void fill(const T& element)
+    { std::fill(data_.begin(), data_.end(), element); }
+
+
+    struct Rect
     {
-        std::fill(data_.begin(), data_.end(), element);
-    }
-    
-    
-    struct Rect {
         Matrix* mat;
         std::pair<int, int> rowRange, colRange;
-        
-        Rect(Matrix* _mat, const std::pair<int, int>& _rowRange, const std::pair<int, int>& _colRange):
-        mat(_mat), rowRange(_rowRange), colRange(_colRange) {}
+
+        Rect(Matrix* _mat, const std::pair<int, int>& _rowRange, const std::pair<int, int>& _colRange)
+            : mat(_mat), rowRange(_rowRange), colRange(_colRange) {}
 
         Rect& operator=(const Rect& rect)
         {
             assert(rowRange.second - rowRange.first == rect.rowRange.second - rect.rowRange.first);
             assert(colRange.second - colRange.first == rect.colRange.second - rect.colRange.first);
-            for(int i = rect.rowRange.first; i < rect.rowRange.second; ++i) {
-                std::copy((*rect.mat)[i]+rect.colRange.first , (*rect.mat)[i] + rect.colRange.second, 
-                        (*mat)[i - rect.rowRange.first + rowRange.first]+colRange.first);
+            for (int i = rect.rowRange.first; i < rect.rowRange.second; ++i)
+            {
+                std::copy((*rect.mat)[i] + rect.colRange.first, (*rect.mat)[i] + rect.colRange.second,
+                          (*mat)[i - rect.rowRange.first + rowRange.first] + colRange.first);
             }
             return *this;
         }
@@ -113,11 +104,12 @@ public:
         {
             assert(rowRange.second - rowRange.first == M_ROWS);
             assert(colRange.second - colRange.first == M_COLS);
-            for(int i = 0; i < mat.rows(); ++i) {
-                std::copy(mat[i], mat[i + 1], (*this->mat)[i + rowRange.first]+colRange.first);
+            for (int i = 0; i < mat.rows(); ++i)
+            {
+                std::copy(mat[i], mat[i + 1], (*this->mat)[i + rowRange.first] + colRange.first);
             }
             return *this;
-        }        
+        }
     };
 
 
@@ -132,14 +124,12 @@ public:
         }
         return *this;
     }
-    
-    
-    Rect operator()(const std::pair<int, int>& rowRange, 
+
+
+    Rect operator()(const std::pair<int, int>& rowRange,
                     const std::pair<int, int>& colRange)
-    {
-        return Rect(this, rowRange, colRange);
-    }
-    
+    { return Rect(this, rowRange, colRange); }
+
 
     Matrix Transpose()
     {
@@ -162,40 +152,17 @@ public:
     Matrix invert();
 
 
-    T* operator[](int i)
-    {
-        return data() + i * COLS;
-    }
+    T* operator[](int i) { return data() + i * COLS; }
+    const T* operator[](int i) const { return data() + i * COLS; }
 
-    const T* operator[](int i) const
-    {
-        return data() + i * COLS;
-    }
+    T* data() { return data_.begin(); }
+    const T* data() const { return data_.cbegin(); }
 
-    T* data()
-    {
-        return data_.begin();
-    }
-
-    const T* data() const
-    {
-        return data_.cbegin();
-    }
-
-    int rows() const
-    {
-        return ROWS;
-    }
-
-    int cols() const
-    {
-        return COLS;
-    }
-
+    int rows() const { return ROWS; }
+    int cols() const { return COLS; }
 
 private:
     std::array<T, ROWS* COLS> data_;
-
 };
 
 template <typename Q, int m, int n, int p>
@@ -219,7 +186,7 @@ inline Matrix<Q, m, p> operator*(const Matrix<Q, m, n>& a, const Matrix<Q, n, p>
                 ++ptrSrcA;
                 ptrSrcB += b.cols();
             }
-            
+
         }
     }
     return res;
@@ -304,13 +271,13 @@ Matrix<T, ROWS, COLS> Matrix<T, ROWS, COLS>::invert()
 
 
 #define MAKE_TYPEDEFS(Type, TypeSuffix, Size)                     \
-    using Matrix##Size##TypeSuffix = Matrix<Type, Size, Size>;              
-    
-    
+    using Matrix##Size##TypeSuffix = Matrix<Type, Size, Size>;
+
+
 #define MAKE_TYPEDEFS_ALL_SIZES(Type, TypeSuffix) \
-MAKE_TYPEDEFS(Type, TypeSuffix, 2) \
-MAKE_TYPEDEFS(Type, TypeSuffix, 3) \
-MAKE_TYPEDEFS(Type, TypeSuffix, 4) 
+    MAKE_TYPEDEFS(Type, TypeSuffix, 2) \
+    MAKE_TYPEDEFS(Type, TypeSuffix, 3) \
+    MAKE_TYPEDEFS(Type, TypeSuffix, 4)
 
 MAKE_TYPEDEFS_ALL_SIZES(int, i)
 MAKE_TYPEDEFS_ALL_SIZES(float, f)
@@ -324,7 +291,7 @@ MAKE_TYPEDEFS_ALL_SIZES(double, d)
 
 #define MAKE_TYPEDEFS(Size)                     \
     template <typename T>                           \
-    using Matrix##Size = Matrix<T, Size, Size>;              
+    using Matrix##Size = Matrix<T, Size, Size>;
 
 
 MAKE_TYPEDEFS(2)
@@ -334,5 +301,6 @@ MAKE_TYPEDEFS(4)
 
 #undef MAKE_TYPEDEFS
 
+} // namespace util
 
-#endif // MATRIX_HPP
+#endif // UTIL_MATRIX_HPP

@@ -6,17 +6,16 @@
 template <class T>
 class Singleton
 {
-private:
-    Singleton() = default;
-    ~Singleton() = default;
+public:
+    Singleton() = delete;
+    ~Singleton() = delete;
     Singleton(const Singleton&) = delete;
     Singleton& operator=(const Singleton&) = delete;
 
-public:
     template <typename... Args>
     static T* instance(Args&& ... args)
     {
-        std::call_once(flag_, [&]()
+        std::call_once(flag_, [&]
         {
             instance_ = new T(std::forward<Args>(args)...);
         });
@@ -28,7 +27,7 @@ public:
         if (instance_)
         {
             delete instance_;
-            instance_ = NULL;
+            instance_ = nullptr;
         }
     }
 

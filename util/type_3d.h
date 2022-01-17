@@ -1,5 +1,5 @@
-#ifndef TYPE_3D_H
-#define TYPE_3D_H
+#ifndef UTIL_TYPE_3D_H
+#define UTIL_TYPE_3D_H
 
 #include <cmath>
 #include <array>
@@ -8,9 +8,10 @@
 
 #include "matrix.hpp"
 
-#ifndef PI
-#define PI 3.14159265359
-#endif
+namespace util
+{
+
+constexpr double PI = 3.14159265359;
 
 template <class T>
 struct Point3_
@@ -41,15 +42,8 @@ struct Point3_
     Point3_(const std::array<T, 3>& _point): point(_point) {}
     Point3_(const Matrix<T, 3, 1>& _mat): mat(_mat) {}
 
-
-    T& operator[](int i)
-    {
-        return point[i];
-    }
-    const T& operator[](int i) const
-    {
-        return point[i];
-    }
+    T& operator[](int i) { return point[i]; }
+    const T& operator[](int i) const { return point[i]; }
 
     Point3_<double> rotateByAxis(const Point3_<double>& axis, double angle) const;
 };
@@ -79,9 +73,9 @@ struct Attitude_
         return in;
     }
 
-    T yaw = 0;//右偏为正
-    T pitch = 0;//抬头为正
-    T roll = 0;//右滚为正
+    T yaw = 0; // 右偏为正
+    T pitch = 0; // 抬头为正
+    T roll = 0; // 右滚为正
 };
 
 using Attitude = Attitude_<double>;
@@ -113,7 +107,6 @@ inline Vec3d normalize(const Vec3d& v)
     return {v.x / norm, v.y / norm, v.z / norm};
 }
 
-
 inline Matrix3d rotationMatrix(const Vec3d& axis, double angle)
 {
     auto v = ::normalize(axis);
@@ -143,14 +136,11 @@ inline Matrix3d rotationMatrix(const Vec3d& axis, double angle)
     };
 }
 
-
 template <class T>
 inline Vec3d Point3_<T>::rotateByAxis(const Vec3d& axis, double angle) const
 {
     return rotationMatrix(axis, angle) * this->mat;
 }
-
-
 
 inline double angleBetweenLine(const Vec3d& a, const Vec3d& b)
 {
@@ -160,4 +150,6 @@ inline double angleBetweenLine(const Vec3d& a, const Vec3d& b)
     return std::acos(delta);
 }
 
-#endif // TYPE_3D_H
+} // namespace util
+
+#endif // UTIL_TYPE_3D_H

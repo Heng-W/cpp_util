@@ -11,6 +11,7 @@ template <class T>
 class BlockingQueue
 {
 public:
+    using QueueType = std::deque<T>;
 
     void put(const T& x)
     {
@@ -44,7 +45,7 @@ public:
 private:
     mutable std::mutex mutex_;
     std::condition_variable notEmpty_;
-    std::deque<T> queue_;
+    QueueType queue_;
 };
 
 } // namespace util
