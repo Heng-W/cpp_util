@@ -1,12 +1,12 @@
-#ifndef _SYS_CMD_H_
-#define _SYS_CMD_H_
+#ifndef UTIL_SYS_CMD_H
+#define UTIL_SYS_CMD_H
 
 #include <string>
 
 namespace util
 {
 
-//解析系统命令
+// 解析Linux命令
 int system(const std::string& cmd, std::string& result);
 
 inline std::string system(const std::string& cmd)
@@ -16,7 +16,7 @@ inline std::string system(const std::string& cmd)
     return result;
 }
 
-}
+} // namespace util
 
-#endif
+#endif // UTIL_SYS_CMD_H
 

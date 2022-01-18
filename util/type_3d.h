@@ -11,8 +11,6 @@
 namespace util
 {
 
-constexpr double PI = 3.14159265359;
-
 template <class T>
 struct Point3_
 {
@@ -109,7 +107,7 @@ inline Vec3d normalize(const Vec3d& v)
 
 inline Matrix3d rotationMatrix(const Vec3d& axis, double angle)
 {
-    auto v = ::normalize(axis);
+    auto v = normalize(axis);
 
     double S = std::sin(angle);
     double C = std::cos(angle);

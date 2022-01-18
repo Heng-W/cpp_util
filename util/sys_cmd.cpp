@@ -1,4 +1,3 @@
-
 /**
  * @brief 创建一个管道，fork一个进程，执行shell
  */
@@ -8,13 +7,12 @@
 #include <string>
 #include <sstream>
 
-
 namespace util
 {
 
 int system(const std::string& cmd, std::string& result)
 {
-    FILE* fp = popen(cmd.c_str(), "r"); //将命令输出通过管道读取到文件流
+    FILE* fp = popen(cmd.c_str(), "r"); // 将命令输出通过管道读取到文件流
     if (!fp)
     {
         result = std::string("run command failed:") + strerror(errno);
@@ -24,8 +22,7 @@ int system(const std::string& cmd, std::string& result)
     std::stringstream ss;
     char lineBuf[512];
 
-    //fread(buf, sizeof(char), sizeof(buf), fp);
-
+    // fread(buf, sizeof(char), sizeof(buf), fp);
     while (fgets(lineBuf, sizeof(lineBuf), fp))
     {
         if (ss.tellp() > (4 << 10))
@@ -36,7 +33,6 @@ int system(const std::string& cmd, std::string& result)
     }
 
     int ret = pclose(fp);
-
     if (ret == -1 || !WIFEXITED(ret))
     {
         result = std::string("run command failed:") + strerror(errno);
@@ -50,7 +46,6 @@ int system(const std::string& cmd, std::string& result)
     return exitcode;
 }
 
-
-}
+} // namespace util
 
 

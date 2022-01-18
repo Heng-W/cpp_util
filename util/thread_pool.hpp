@@ -16,17 +16,14 @@ class ThreadPool
 public:
     using Task = std::function<void()>;
 
-    explicit ThreadPool(int threadNum = -1)
-        : runFlag_(false)
+    explicit ThreadPool()
+        : running_(false)
     {
-        if (threadNum > 0)
-            start(threadNum);
     }
 
     ~ThreadPool()
     {
-        if (runFlag_)
-            stop();
+        if (running_) stop();
     }
 
     DISALLOW_COPY_AND_ASSIGN(ThreadPool);
@@ -34,10 +31,10 @@ public:
     template <class Fn, class... Args>
     auto commit(Fn&& fn, Args&& ... args) ->std::future<decltype(fn(args...))>;
 
-    void start(int threadNum);
+    void start(int numThreads);
     void stop();
 
-    int threadNum() const { return threads_.size(); }
+    int numThreads() const { return threads_.size(); }
 
 private:
     mutable std::mutex mutex_;
@@ -45,7 +42,7 @@ private:
 
     std::vector<std::thread> threads_;
     std::queue<Task> tasks_;     //任务队列
-    bool runFlag_;
+    bool running_;
 };
 
 
@@ -58,20 +55,19 @@ auto ThreadPool::commit(Fn&& fn, Args&& ... args) ->std::future<decltype(fn(args
     auto future = task->get_future();
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        if (!runFlag_) throw std::runtime_error("ThreadPool is stopped");
+        if (!running_) throw std::runtime_error("ThreadPool is stopped");
         tasks_.emplace([task] { (*task)(); });   
     }
     cvTask_.notify_one();
     return future;
 }
 
-inline void ThreadPool::start(int threadNum)
+inline void ThreadPool::start(int numThreads)
 {
-    if (!threads_.empty())
-        throw std::runtime_error("ThreadPool has started");
-    runFlag_ = true;
-    threads_.reserve(threadNum);
-    for (int i = 0; i < threadNum ; ++i)
+    assert(threads_.empty());
+    running_ = true;
+    threads_.reserve(numThreads);
+    for (int i = 0; i < numThreads; ++i)
     {
         threads_.emplace_back([this]
         {
@@ -82,14 +78,13 @@ inline void ThreadPool::start(int threadNum)
                     std::unique_lock<std::mutex> lock(mutex_);
                     cvTask_.wait(lock, [this]
                     {
-                        return !tasks_.empty() || !runFlag_;
-                    }); //等待task
-                    if (tasks_.empty() && !runFlag_)
-                        return;
-                    task = std::move(tasks_.front());//获取一个task
+                        return !tasks_.empty() || !running_;
+                    });
+                    if (tasks_.empty() && !running_) return;
+                    task = std::move(tasks_.front()); // 获取一个task
                     tasks_.pop();
                 }
-                if (task) task();//执行任务
+                if (task) task(); // 执行任务
             }
         });
     }
@@ -99,13 +94,12 @@ inline void ThreadPool::stop()
 {
     {
         std::lock_guard<std::mutex> lock(mutex_);
-        runFlag_ = false;
+        running_ = false;
         cvTask_.notify_all(); // 唤醒所有线程
     }
     for (auto& thread : threads_)
     {
-        if (thread.joinable())
-            thread.join();
+        if (thread.joinable()) thread.join();
     }
 }
 

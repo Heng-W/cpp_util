@@ -1,5 +1,5 @@
-#ifndef _FILE_IO_HPP_
-#define _FILE_IO_HPP_
+#ifndef UTIL_FILE_IO_HPP
+#define UTIL_FILE_IO_HPP
 
 #include <string>
 #include <iostream>
@@ -41,5 +41,5 @@ int readFromFile(const std::string& fileName, T& obj)
 
 } //namespace util
 
-#endif
+#endif // UTIL_FILE_IO_HPP
 

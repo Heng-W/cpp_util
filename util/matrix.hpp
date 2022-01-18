@@ -12,10 +12,10 @@ template <typename T, int ROWS, int COLS>
 class Matrix
 {
 public:
-    using valueType = T;
-    using Iterator = valueType*;
-    using constIterator = const valueType*;
-    using reference = valueType&;
+    using ValueType = T;
+    using Iterator = ValueType*;
+    using ConstIterator = const ValueType*;
+    using Reference = ValueType&;
 
     friend std::ostream& operator<<(std::ostream& out, const Matrix& mat)
     {
@@ -71,7 +71,6 @@ public:
     { std::copy(data.begin(), data.end(), data_.begin()); }
 
     Matrix(const std::array<T, ROWS* COLS>& data): data_(data) {}
-
     Matrix(const T& element) { fill(element); }
 
     void fill(const T& element)
@@ -186,7 +185,6 @@ inline Matrix<Q, m, p> operator*(const Matrix<Q, m, n>& a, const Matrix<Q, n, p>
                 ++ptrSrcA;
                 ptrSrcB += b.cols();
             }
-
         }
     }
     return res;
@@ -224,7 +222,7 @@ Matrix<T, ROWS, COLS> Matrix<T, ROWS, COLS>::invert()
     for (i = 0; i < N; i++)
     {
         int r = i;
-        //按列选主元
+        // 按列选主元
         for (k = i + 1; k < N; k++)
         {
             if (fabs(p[k][i]) > fabs(p[r][i]))
@@ -234,16 +232,16 @@ Matrix<T, ROWS, COLS> Matrix<T, ROWS, COLS>::invert()
         }
         if (fabs(p[r][i]) <= 1e-7)
         {
-            throw std::exception("invert");
+            throw std::runtime_error("invert");
         }
-        //行交换
+        // 行交换
         if (r > i)
         {
             T* tmp = p[r];
             p[r] = p[i];
             p[i] = tmp;
         }
-        //消元
+        // 消元
         for (k = 0; k < N; k++)
         {
             if (k != i)
@@ -256,9 +254,8 @@ Matrix<T, ROWS, COLS> Matrix<T, ROWS, COLS>::invert()
             }
         }
     }
-
     Matrix<T, N, N> dst;
-    //左边化为单位阵
+    // 左边化为单位阵
     for (i = 0; i < N; i++)
     {
         for (j = N; j < (2 * N); j++)
@@ -273,7 +270,6 @@ Matrix<T, ROWS, COLS> Matrix<T, ROWS, COLS>::invert()
 #define MAKE_TYPEDEFS(Type, TypeSuffix, Size)                     \
     using Matrix##Size##TypeSuffix = Matrix<Type, Size, Size>;
 
-
 #define MAKE_TYPEDEFS_ALL_SIZES(Type, TypeSuffix) \
     MAKE_TYPEDEFS(Type, TypeSuffix, 2) \
     MAKE_TYPEDEFS(Type, TypeSuffix, 3) \
@@ -283,21 +279,16 @@ MAKE_TYPEDEFS_ALL_SIZES(int, i)
 MAKE_TYPEDEFS_ALL_SIZES(float, f)
 MAKE_TYPEDEFS_ALL_SIZES(double, d)
 
-
 #undef MAKE_TYPEDEFS
 #undef MAKE_TYPEDEFS_ALL_SIZES
-
-
 
 #define MAKE_TYPEDEFS(Size)                     \
     template <typename T>                           \
     using Matrix##Size = Matrix<T, Size, Size>;
 
-
 MAKE_TYPEDEFS(2)
 MAKE_TYPEDEFS(3)
 MAKE_TYPEDEFS(4)
-
 
 #undef MAKE_TYPEDEFS
 

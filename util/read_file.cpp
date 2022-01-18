@@ -24,13 +24,13 @@ void getFiles(std::string path, std::vector<std::string>& files)
     {
         if (strcmp(ptr->d_name, ".") == 0 || strcmp(ptr->d_name, "..") == 0)
             continue;
-        else if (ptr->d_type == 8)//-
+        else if (ptr->d_type == 8) //-
             files.push_back(path + ptr->d_name);
-        else if (ptr->d_type == 10)//l
+        else if (ptr->d_type == 10) //l
             continue;
-        else if (ptr->d_type == 4)//d
+        else if (ptr->d_type == 4) //d
         {
-            //files.push_back(ptr->d_name);
+            // files.push_back(ptr->d_name);
             getFiles(path + ptr->d_name + "/", files);
         }
     }
