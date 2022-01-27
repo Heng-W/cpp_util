@@ -11,7 +11,10 @@ namespace util
 class StringView
 {
     friend std::ostream& operator<<(std::ostream& out, const StringView& str)
-    { out << str.data_; return out; }
+    {
+        for (const char& c : str) out << c;
+        return out;
+    }
 
 public:
     constexpr StringView(): data_(nullptr), size_(0) {}
@@ -63,6 +66,7 @@ public:
 private:
     static constexpr int strLen(const char* str, int res = 0)
     { return *str ? strLen(str + 1, res + 1) : res; }
+
 
     const char* data_;
     int size_;
